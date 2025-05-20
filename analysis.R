@@ -107,6 +107,198 @@ cheatexam_model <- stm(documents = docs_cheatexam, vocab = vocab_cheatexam, K = 
 set.seed(42)
 getfired_model <- stm(documents = docs_getfired, vocab = vocab_getfired, K = 6, prevalence = ~Sex, content = ~Sex, max.em.its = 75, data = meta_getfired, init.type = "Spectral")
 
+# Topic Model Examples and Definition
+
+## Event 1: No ticket
+
+sageLabels(noticket_model, n = 7)
+labelTopics(noticket_model, c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+
+### Topic 1
+notickets_thoughts1 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 1, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(1, 1, 1, 1))
+plotQuote(notickets_thoughts1, width = 60, main = "Topic 1")
+
+### Topic 2
+notickets_thoughts2 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 2, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(1, 1, 1, 1))
+plotQuote(notickets_thoughts2, width = 60, main = "Topic 2")
+
+### Topic 3
+notickets_thoughts3 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 3, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(notickets_thoughts3, width = 60, main = "Topic 3")
+
+### Topic 4
+notickets_thoughts4 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 4, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(notickets_thoughts4, width = 60, main = "Topic 4")
+
+### Topic 5
+notickets_thoughts5 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 5, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(notickets_thoughts5, width = 60, main = "Topic 5")
+
+### Topic 6
+notickets_thoughts6 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 6, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(notickets_thoughts6, width = 60, main = "Topic 6")
+
+### Topic 7
+notickets_thoughts7 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 7, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(notickets_thoughts7, width = 60, main = "Topic 7")
+
+### Topic 8
+notickets_thoughts8 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 8, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(notickets_thoughts8, width = 60, main = "Topic 8")
+
+### Topic 9
+notickets_thoughts9 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 9, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(notickets_thoughts9, width = 60, main = "Topic 9")
+
+### Topic 10
+notickets_thoughts10 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 10, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(notickets_thoughts10, width = 60, main = "Topic 10")
+
+## Event 2: Missed Deadline
+
+sageLabels(missdeadline_model, n = 7)
+labelTopics(missdeadline_model, c(1, 2, 3, 4, 5, 6, 7))
+
+### Topic 1
+missdeadline_thoughts1 <- findThoughts(missdeadline_model, texts = meta_missdeadline$False_event, topics = 1, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(missdeadline_thoughts1, width = 60, main = "Topic 1")
+
+### Topic 2
+missdeadline_thoughts2 <- findThoughts(missdeadline_model, texts = meta_missdeadline$False_event, topics = 2, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(missdeadline_thoughts2, width = 60, main = "Topic 2")
+
+### Topic 3
+missdeadline_thoughts3 <- findThoughts(missdeadline_model, texts = meta_missdeadline$False_event, topics = 3, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(missdeadline_thoughts3, width = 60, main = "Topic 3")
+
+### Topic 4
+missdeadline_thoughts4 <- findThoughts(missdeadline_model, texts = meta_missdeadline$False_event, topics = 4, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(missdeadline_thoughts4, width = 60, main = "Topic 4")
+
+### Topic 5
+missdeadline_thoughts5 <- findThoughts(missdeadline_model, texts = meta_missdeadline$False_event, topics = 5, n = 1)$docs[[1]]
+par(mfrow = c(1,1), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(missdeadline_thoughts5, width = 130, main = "Topic 5")
+
+### Topic 6
+missdeadline_thoughts6 <- findThoughts(missdeadline_model, texts = meta_missdeadline$False_event, topics = 6, n = 1)$docs[[1]]
+par(mfrow = c(1,1), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(missdeadline_thoughts6, width = 130, main = "Topic 6")
+
+### Topic 7
+missdeadline_thoughts7 <- findThoughts(missdeadline_model, texts = meta_missdeadline$False_event, topics = 7, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(missdeadline_thoughts7, width = 60, main = "Topic 7")
+
+## Event 3: Car Accident Involve
+
+sageLabels(caraccidentinvolve_model, n = 7)
+labelTopics(caraccidentinvolve_model, c(1, 2, 3, 4))
+
+### Topic 1
+caraccidentinvolve_thoughts1 <- findThoughts(caraccidentinvolve_model, texts = meta_caraccidentinvolve$False_event, topics = 1, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(caraccidentinvolve_thoughts1, width = 60, main = "Topic 1")
+
+### Topic 2
+caraccidentinvolve_thoughts2 <- findThoughts(caraccidentinvolve_model, texts = meta_caraccidentinvolve$False_event, topics = 2, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(caraccidentinvolve_thoughts2, width = 60, main = "Topic 2")
+
+### Topic 3
+caraccidentinvolve_thoughts3 <- findThoughts(caraccidentinvolve_model, texts = meta_caraccidentinvolve$False_event, topics = 3, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(caraccidentinvolve_thoughts3, width = 60, main = "Topic 3")
+
+### Topic 4
+caraccidentinvolve_thoughts4 <- findThoughts(caraccidentinvolve_model, texts = meta_caraccidentinvolve$False_event, topics = 4, n = 1)$docs[[1]]
+par(mfrow = c(1,1), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(caraccidentinvolve_thoughts4, width = 130, main = "Topic 4")
+
+## Event 4: Cheat exam
+
+sageLabels(cheatexam_model, n = 7)
+labelTopics(cheatexam_model, c(1, 2, 3, 4, 5, 6))
+
+### Topic 1
+cheatexam_thoughts1 <- findThoughts(cheatexam_model, texts = meta_cheatexam$False_event, topics = 1, n = 1)$docs[[1]]
+par(mfrow = c(1,1), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(cheatexam_thoughts1, width = 130, main = "Topic 1")
+
+### Topic 2
+cheatexam_thoughts2 <- findThoughts(cheatexam_model, texts = meta_cheatexam$False_event, topics = 2, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(cheatexam_thoughts2, width = 60, main = "Topic 2")
+
+### Topic 3
+cheatexam_thoughts3 <- findThoughts(cheatexam_model, texts = meta_cheatexam$False_event, topics = 3, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(cheatexam_thoughts3, width = 60, main = "Topic 3")
+
+### Topic 4
+cheatexam_thoughts4 <- findThoughts(cheatexam_model, texts = meta_cheatexam$False_event, topics = 4, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(cheatexam_thoughts4, width = 60, main = "Topic 4")
+
+### Topic 5
+cheatexam_thoughts5 <- findThoughts(cheatexam_model, texts = meta_cheatexam$False_event, topics = 5, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(cheatexam_thoughts5, width = 60, main = "Topic 5")
+
+### Topic 6
+cheatexam_thoughts6 <- findThoughts(cheatexam_model, texts = meta_cheatexam$False_event, topics = 6, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(cheatexam_thoughts6, width = 60, main = "Topic 6")
+
+## Event 5: Get fired
+
+sageLabels(getfired_model, n = 7)
+labelTopics(getfired_model, c(1, 2, 3, 4, 5, 6))
+
+### Topic 1
+getfired_thoughts1 <- findThoughts(getfired_model, texts = meta_getfired$False_event, topics = 1, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(getfired_thoughts1, width = 60, main = "Topic 1")
+
+### Topic 2
+getfired_thoughts2 <- findThoughts(getfired_model, texts = meta_getfired$False_event, topics = 2, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(getfired_thoughts2, width = 60, main = "Topic 2")
+
+### Topic 3
+getfired_thoughts3 <- findThoughts(getfired_model, texts = meta_getfired$False_event, topics = 3, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(getfired_thoughts3, width = 60, main = "Topic 3")
+
+### Topic 4
+getfired_thoughts4 <- findThoughts(getfired_model, texts = meta_getfired$False_event, topics = 4, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(getfired_thoughts4, width = 60, main = "Topic 4")
+
+### Topic 5
+getfired_thoughts5 <- findThoughts(getfired_model, texts = meta_getfired$False_event, topics = 5, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(getfired_thoughts5, width = 60, main = "Topic 5")
+
+### Topic 6
+getfired_thoughts6 <- findThoughts(getfired_model, texts = meta_getfired$False_event, topics = 6, n = 1)$docs[[1]]
+par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
+plotQuote(getfired_thoughts6, width = 60, main = "Topic 6")
+
 # Visualizations
 
 noticket_effect <- estimateEffect(1:10 ~ Sex, noticket_model, meta = meta_noticket, uncertainty = "Global")
