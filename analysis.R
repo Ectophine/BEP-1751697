@@ -1,4 +1,6 @@
 library(stm)
+library(quanteda)
+library(data.table)
 set.seed(42)
 
 # Reading and processing the data
@@ -411,5 +413,168 @@ plot(getfired_model, type = "summary", xlim = c(0, 0.4))
 summary(getfired_model)
 summary(getfired_effect)
 
-
 topicQuality(noticket_model, documents = docs_noticket, xlab = "Semantic Coherence", ylab = "Exclusivity", labels = 1:10, M = 10)
+
+# Statistical Testing: Topic Content with n-gram differentiation test
+
+## function for n-gram differentiation test (between-test)
+
+require(quanteda)
+require(data.table)
+
+ngram_diff_between <- function(data
+                              , id_var
+                              , text_var
+                              , splitter_var
+                              , splitter_level_1
+                              , splitter_level_2
+                              , rm_stopwords_bool = TRUE
+                              , stem_bool = TRUE
+                              , ngram_max
+                              , min_doc_freq = 0.05
+                              , nboot = 100){
+  
+  
+  var_vec <- c(id_var, text_var, splitter_var)
+  data <- as.data.table(data)
+  data.df <- data.frame(data[, ..var_vec])
+  names(data.df) <- c('id', 'text', 'splitter')
+  data.df$doc_id <- paste0('text', 1:nrow(data.df))
+  
+  t <- tokens(tolower(data.df$text)
+             , remove_punct = T
+             , remove_numbers = F)
+  
+  if(rm_stopwords_bool == T){
+    t_ <- tokens_select(t, pattern = stopwords("en"), selection = "remove")
+  } else {
+    t_ <- t
+  }
+  
+  
+  ngrams_step_1 <- dfm(tokens_ngrams(t_
+                                    , n = 1:ngram_max
+                                    , skip = 0))
+  
+  if(stem_bool == T){
+    ngrams_step_2 <- dfm_wordstem(x = ngrams_step_1)
+  } else {
+    ngrams_step_2 <- ngrams_step_1
+  }
+  
+  
+  ngrams_step_3 <- dfm_trim(ngrams_step_2
+                           , min_docfreq = min_doc_freq
+                           , docfreq_type = 'prop')
+  
+  
+  ngram.dt <- setDT(convert(ngrams_step_3, 'data.frame'))
+  ngram.dt[, splitter := data.df$splitter]
+  
+  print('--- finished preprocessing ---')
+  
+  # run analysis
+  list_for_results <- list()
+  cols <- names(ngram.dt)[!(names(ngram.dt) %in% c('doc_id', 'splitter'))]
+  n_retained_ngrams <- length(cols)
+  
+  for(i in 1:(length(cols)-1)){
+    print(paste0(i, "/", (length(cols)-1), " --> ", cols[i]))
+    
+    ngram <- cols[i]
+    
+    min_df <- data.frame(w = ngram.dt[, ..ngram]
+                        , SPLIT = ngram.dt[, splitter])
+    names(min_df) <- c('w', 'split')
+    
+    # custom Wilcoxon rank-sum test
+    d <- setDT(min_df)
+    
+    vec_r <- numeric()
+    for(j in 1:nboot){
+      set.seed(j)
+      n_obs <- d[, .N]
+      d[, rank := frank(w, ties.method = 'random')]
+      ranksum_1 <- sum(d[split == splitter_level_1, rank])
+      ranksum_2 <- sum(d[split == splitter_level_2, rank])
+      ranksum_full <- n_obs*(n_obs + 1)/2
+      
+      n_1 <- length(d$rank[d$split == splitter_level_1])
+      n_2 <- length(d$rank[d$split == splitter_level_2])
+      
+      U_1 <- ranksum_1 - ((n_1*(n_1+1))/2)
+      U_2 <- ranksum_2 - ((n_1*(n_1+1))/2)
+      
+      r <- ((2*U_1)/(n_1*n_2))-1
+      
+      vec_r[j] <- r
+    }
+    
+    # to output
+    out_1 <- data.frame('ngram' = ngram
+                       , 'M1' = round(mean(min_df$w[min_df$split == splitter_level_1]), 2)
+                       , 'SD1' = round(sd(min_df$w[min_df$split == splitter_level_1]), 2)
+                       , 'M2' = round(mean(min_df$w[min_df$split == splitter_level_2]), 2)
+                       , 'SD2' = round(sd(min_df$w[min_df$split == splitter_level_2]), 2)
+                       , 'U_r_boot_M' = round(mean(vec_r), 4)
+                       , 'U_r_boot_SD' = round(sd(vec_r), 4)
+    )
+    
+    list_for_results[[i]] <- out_1
+  }
+  
+  ndt <- rbindlist(list_for_results)
+  ndt_ordered <- ndt[order(-abs(U_r_boot_M)), ]
+  return(list(results=ndt_ordered, n_retained_ngrams=n_retained_ngrams))
+  
+}
+
+## Event 1
+
+noticket_contenttest <- ngram_diff_between(data = data_noticket, id_var = 'Participant_id', 
+                                           text_var = 'False_event_clean',
+                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
+                                           splitter_level_2 = 'Male', ngram_max = 1,
+                                           rm_stopwords_bool = F,
+                                           min_doc_freq = 0.05, stem_bool = F)
+head(noticket_contenttest$results, 15)
+
+## Event 2
+
+missdeadline_contenttest <- ngram_diff_between(data = data_missdeadline, id_var = 'Participant_id', 
+                                           text_var = 'False_event_clean',
+                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
+                                           splitter_level_2 = 'Male', ngram_max = 1,
+                                           rm_stopwords_bool = F,
+                                           min_doc_freq = 0.05, stem_bool = F)
+head(missdeadline_contenttest$results, 15)
+
+## Event 3
+
+caraccidentinvolve_contenttest <- ngram_diff_between(data = data_caraccidentinvolve, id_var = 'Participant_id', 
+                                           text_var = 'False_event_clean',
+                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
+                                           splitter_level_2 = 'Male', ngram_max = 1,
+                                           rm_stopwords_bool = F,
+                                           min_doc_freq = 0.05, stem_bool = F)
+head(caraccidentinvolve_contenttest$results, 30)
+
+## Event 4
+
+cheatexam_contenttest <- ngram_diff_between(data = data_cheatexam, id_var = 'Participant_id', 
+                                           text_var = 'False_event_clean',
+                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
+                                           splitter_level_2 = 'Male', ngram_max = 1,
+                                           rm_stopwords_bool = F,
+                                           min_doc_freq = 0.05, stem_bool = F)
+head(cheatexam_contenttest$results, 25)
+
+## Event 5
+
+getfired_contenttest <- ngram_diff_between(data = data_getfired, id_var = 'Participant_id', 
+                                           text_var = 'False_event_clean',
+                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
+                                           splitter_level_2 = 'Male', ngram_max = 1,
+                                           rm_stopwords_bool = F,
+                                           min_doc_freq = 0.05, stem_bool = F)
+head(getfired_contenttest$results, 15)
