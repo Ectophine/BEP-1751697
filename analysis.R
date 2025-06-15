@@ -3,12 +3,15 @@ library(quanteda)
 library(data.table)
 set.seed(42)
 
-# Reading and processing the data
+# Set-up
+
+## Reading and processing the data
 data <- read.csv("Embedded_lies_manprep.csv", sep = ";")
 
 ## Remove CONSENT_REVOKED, DATA_EXPIRED, and Prefer Not To Say
 data <- data[!(data$Sex %in% c("CONSENT_REVOKED", "DATA_EXPIRED", "Prefer not to say")),]
 
+## Create data frame for each event_type being considered
 data_noticket <- data[data$Event == "Taking the bus/train without the ticket",]
 data_missdeadline <- data[data$Event == "Missing a deadline at work because of bad organisation",]
 data_caraccidentinvolve <- data[data$Event == "Being involved in a car accident",]
@@ -21,14 +24,6 @@ processed_missdeadline <- textProcessor(data_missdeadline$False_event_clean, met
 processed_caraccidentinvolve <- textProcessor(data_caraccidentinvolve$False_event_clean, metadata = data_caraccidentinvolve, stem = FALSE)
 processed_cheatexam <- textProcessor(data_cheatexam$False_event_clean, metadata = data_cheatexam, stem = FALSE)
 processed_getfired <- textProcessor(data_getfired$False_event_clean, metadata = data_getfired, stem = FALSE)
-
-
-## Checking word removal thresholds
-plotRemoved(processed_noticket$documents, lower.thresh = seq(1, 123, by = 1))
-plotRemoved(processed_missdeadline$documents, lower.thresh = seq(1, 96, by = 1))
-plotRemoved(processed_caraccidentinvolve$documents, lower.thresh = seq(1, 47, by = 1))
-plotRemoved(processed_cheatexam$documents, lower.thresh = seq(1, 48, by = 1))
-plotRemoved(processed_getfired$documents, lower.thresh = seq(1, 34, by = 1))
 
 ## Preparing documents
 out_noticket <- prepDocuments(processed_noticket$documents, processed_noticket$vocab, processed_noticket$meta, lower.thresh = 3)
@@ -56,42 +51,6 @@ docs_getfired <- out_getfired$documents
 vocab_getfired <- out_getfired$vocab
 meta_getfired <- out_getfired$meta
 
-## Checking topic count
-set.seed(42)
-storage_noticketwide <- searchK(docs_noticket, vocab_noticket, K = c(4, 6, 8, 10, 12, 14), prevalence = ~Sex, content = ~Sex, data = meta_noticket)
-plot(storage_noticketwide)
-set.seed(42)
-storage_noticketnarrow <- searchK(docs_noticket, vocab_noticket, K = c(8, 9, 10, 11, 12), prevalence = ~Sex, content = ~Sex, data = meta_noticket)
-plot(storage_noticketnarrow)
-
-set.seed(42)
-storage_missdeadlinewide <- searchK(docs_missdeadline, vocab_missdeadline, K = c(4, 6, 8, 10, 12, 14), prevalence = ~Sex, content = ~Sex, data = meta_missdeadline)
-plot(storage_missdeadlinewide)
-set.seed(42)
-storage_missdeadlinenarrow <- searchK(docs_missdeadline, vocab_missdeadline, K = c(3, 4, 5, 6, 7, 8, 9), prevalence = ~Sex, content = ~Sex, data = meta_missdeadline)
-plot(storage_missdeadlinenarrow)
-
-set.seed(42)
-storage_caraccidentinvolvewide <- searchK(docs_caraccidentinvolve, vocab_caraccidentinvolve, K = c(4, 6, 8, 10, 12, 14), prevalence = ~Sex, content = ~Sex, data = meta_caraccidentinvolve)
-plot(storage_caraccidentinvolvewide)
-set.seed(42)
-storage_caraccidentinvolvenarrow <- searchK(docs_caraccidentinvolve, vocab_caraccidentinvolve, K = c(3, 4, 5, 6, 7, 8), prevalence = ~Sex, content = ~Sex, data = meta_caraccidentinvolve)
-plot(storage_caraccidentinvolvenarrow)
-
-set.seed(42)
-storage_cheatexamwide <- searchK(docs_cheatexam, vocab_cheatexam, K = c(4, 6, 8, 10, 12, 14), prevalence = ~Sex, content = ~Sex, data = meta_cheatexam)
-plot(storage_cheatexamwide)
-set.seed(42)
-storage_cheatexamnarrow <- searchK(docs_cheatexam, vocab_cheatexam, K = c(4, 5, 6, 7, 8, 9, 10), prevalence = ~Sex, content = ~Sex, data = meta_cheatexam)
-plot(storage_cheatexamnarrow)
-
-set.seed(42)
-storage_getfiredwide <- searchK(docs_getfired, vocab_getfired, K = c(4, 6, 8, 10, 12, 14), prevalence = ~Sex, content = ~Sex, data = meta_getfired)
-plot(storage_getfiredwide)
-set.seed(42)
-storage_getfirednarrow <- searchK(docs_getfired, vocab_getfired, K = c(3, 4, 5, 6, 7, 8, 9, 10), prevalence = ~Sex, content = ~Sex, data = meta_getfired)
-plot(storage_getfirednarrow)
-
 # Topic Model Estimations
 
 noticket_model <- stm(documents = docs_noticket, vocab = vocab_noticket, K = 10, prevalence = ~Sex, content = ~Sex, max.em.its = 75, data = meta_noticket, init.type = "Spectral", seed = 42)
@@ -104,7 +63,7 @@ cheatexam_model <- stm(documents = docs_cheatexam, vocab = vocab_cheatexam, K = 
 
 getfired_model <- stm(documents = docs_getfired, vocab = vocab_getfired, K = 6, prevalence = ~Sex, content = ~Sex, max.em.its = 75, data = meta_getfired, init.type = "Spectral", seed = 42)
 
-# Topic Model Examples and Definition
+# Topic Model Examples and Definition for Labeling
 
 ## Event 1: No ticket
 
@@ -115,60 +74,61 @@ labelTopics(noticket_model, c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
 notickets_thoughts1 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 1, n = 1)$docs[[1]]
 par(mfrow = c(1,2), mar=c(1, 1, 1, 1))
 plotQuote(notickets_thoughts1, width = 60, main = "Topic 1")
-#print(notickets_thoughts1)
 
 ### Topic 2
 notickets_thoughts2 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 2, n = 3)$docs[[1]]
 par(mfrow = c(1,2), mar=c(1, 1, 1, 1))
 plotQuote(notickets_thoughts2, width = 60, main = "Topic 2")
-#print(notickets_thoughts2)
 
 ### Topic 3
 notickets_thoughts3 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 3, n = 3)$docs[[1]]
 par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
 plotQuote(notickets_thoughts3, width = 60, main = "Topic 3")
-print(notickets_thoughts3)
 
 ### Topic 4
 notickets_thoughts4 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 4, n = 3)$docs[[1]]
 par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
 plotQuote(notickets_thoughts4, width = 60, main = "Topic 4")
-print(notickets_thoughts4)
 
 ### Topic 5
 notickets_thoughts5 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 5, n = 3)$docs[[1]]
 par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
 plotQuote(notickets_thoughts5, width = 60, main = "Topic 5")
-print(notickets_thoughts5)
 
 ### Topic 6
 notickets_thoughts6 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 6, n = 3)$docs[[1]]
 par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
 plotQuote(notickets_thoughts6, width = 60, main = "Topic 6")
-print(notickets_thoughts6)
 
 ### Topic 7
 notickets_thoughts7 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 7, n = 3)$docs[[1]]
 par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
 plotQuote(notickets_thoughts7, width = 60, main = "Topic 7")
-print(notickets_thoughts7)
 
 ### Topic 8
 notickets_thoughts8 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 8, n = 3)$docs[[1]]
 par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
 plotQuote(notickets_thoughts8, width = 60, main = "Topic 8")
-print(notickets_thoughts8)
 
 ### Topic 9
 notickets_thoughts9 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 9, n = 3)$docs[[1]]
 par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
 plotQuote(notickets_thoughts9, width = 60, main = "Topic 9")
-print(notickets_thoughts9)
 
 ### Topic 10
 notickets_thoughts10 <- findThoughts(noticket_model, texts = meta_noticket$False_event, topics = 10, n = 3)$docs[[1]]
 par(mfrow = c(1,2), mar=c(0.5, 0.5, 1, 0.5))
 plotQuote(notickets_thoughts10, width = 60, main = "Topic 10")
+
+print(notickets_thoughts1)
+print(notickets_thoughts2)
+print(notickets_thoughts3)
+print(notickets_thoughts4)
+print(notickets_thoughts5)
+print(notickets_thoughts6)
+print(notickets_thoughts7)
+print(notickets_thoughts8)
+print(notickets_thoughts9)
 print(notickets_thoughts10)
 
 ## Event 2: Missed Deadline
@@ -333,7 +293,9 @@ print(getfired_thoughts4)
 print(getfired_thoughts5)
 print(getfired_thoughts6)
 
-# Visualizations
+# Topic Model Visualizations and Linear Regression
+
+## Event 1
 
 noticket_effect <- estimateEffect(1:10 ~ Sex, noticket_model, meta = meta_noticket, uncertainty = "Local", documents = docs_noticket)
 plot(noticket_effect, covariate = "Sex", topics = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), model = noticket_model, 
@@ -354,6 +316,8 @@ plot(noticket_model, type = "summary", xlim = c(0, 0.3))
 summary(noticket_model)
 summary(noticket_effect)
 
+## Event 2
+
 missdeadline_effect <- estimateEffect(1:7 ~ Sex,missdeadline_model, meta = meta_missdeadline, uncertainty = "Local", documents = docs_missdeadline)
 plot(missdeadline_effect, covariate = "Sex", topics = c(1, 2, 3, 4, 5, 6, 7), model = missdeadline_model, 
      method = "difference", cov.value1 = "Female", cov.value2 = "Male", xlab = "More Male ... More Female", 
@@ -370,6 +334,8 @@ plot(missdeadline_model, type = "summary", xlim = c(0, 0.3))
 summary(missdeadline_model)
 summary(missdeadline_effect)
 
+## Event 3
+
 caraccidentinvolve_effect <- estimateEffect(1:4 ~ Sex, caraccidentinvolve_model, meta = meta_caraccidentinvolve, uncertainty = "Local", documents = docs_caraccidentinvolve)
 plot(caraccidentinvolve_effect, covariate = "Sex", topics = c(1, 2, 3, 4), model = caraccidentinvolve_model, 
      method = "difference", cov.value1 = "Female", cov.value2 = "Male", xlab = "More Male ... More Female", 
@@ -382,6 +348,8 @@ plot(caraccidentinvolve_model, type = "perspectives", topics = 4)
 plot(caraccidentinvolve_model, type = "summary", xlim = c(0, 0.5))
 summary(caraccidentinvolve_model)
 summary(caraccidentinvolve_effect)
+
+## Event 4
 
 cheatexam_effect <- estimateEffect(1:6 ~ Sex, cheatexam_model, meta = meta_cheatexam, uncertainty = "Local", documents = docs_cheatexam)
 plot(cheatexam_effect, covariate = "Sex", topics = c(1, 2, 3, 4, 5, 6), model = cheatexam_model, 
@@ -398,6 +366,8 @@ plot(cheatexam_model, type = "summary", xlim = c(0, 0.4))
 summary(cheatexam_model)
 summary(cheatexam_effect)
 
+## Event 5
+
 getfired_effect <- estimateEffect(1:6 ~ Sex, getfired_model, meta = meta_getfired, uncertainty = "Local", documents = docs_getfired)
 plot(getfired_effect, covariate = "Sex", topics = c(1, 2, 3, 4, 5, 6), model = getfired_model, 
      method = "difference", cov.value1 = "Female", cov.value2 = "Male", xlab = "More Male ... More Female", 
@@ -413,9 +383,7 @@ plot(getfired_model, type = "summary", xlim = c(0, 0.4))
 summary(getfired_model)
 summary(getfired_effect)
 
-topicQuality(noticket_model, documents = docs_noticket, xlab = "Semantic Coherence", ylab = "Exclusivity", labels = 1:10, M = 10)
-
-# Statistical Testing: Topic Content with n-gram differentiation test
+# Topic Content Statistical Testing: n-gram differentiation test
 
 ## function for n-gram differentiation test (between-test)
 
@@ -529,52 +497,111 @@ ngram_diff_between <- function(data
   
 }
 
+## Assign dominant topics to events
+
+topic_assignments_noticket <- apply(noticket_model$theta, 1, which.max)
+topic_assignments_missdeadline <- apply(missdeadline_model$theta, 1, which.max)
+topic_assignments_caraccidentinvolve <- apply(caraccidentinvolve_model$theta, 1, which.max)
+topic_assignments_cheatexam <- apply(cheatexam_model$theta, 1, which.max)
+topic_assignments_getfired <- apply(getfired_model$theta, 1, which.max)
+
+data_noticket$dominant_topic <- topic_assignments_noticket
+data_missdeadline$dominant_topic <- topic_assignments_missdeadline
+data_caraccidentinvolve$dominant_topic <- topic_assignments_caraccidentinvolve
+data_cheatexam$dominant_topic <- topic_assignments_cheatexam
+data_getfired$dominant_topic <- topic_assignments_getfired
+
 ## Event 1
 
-noticket_contenttest <- ngram_diff_between(data = data_noticket, id_var = 'Participant_id', 
-                                           text_var = 'False_event_clean',
-                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
-                                           splitter_level_2 = 'Male', ngram_max = 1,
-                                           rm_stopwords_bool = F,
-                                           min_doc_freq = 0.05, stem_bool = F)
-head(noticket_contenttest$results, 15)
+ngram_results_noticket <- list()
+
+for (k in 1:10) {
+  topic_data <- data_noticket[data_noticket$dominant_topic == k, ]
+  
+  res <- ngram_diff_between(data = topic_data, id_var = 'Participant_id', 
+                            text_var = 'False_event_clean',
+                            splitter_var = 'Sex', splitter_level_1 = 'Female',
+                            splitter_level_2 = 'Male', ngram_max = 1,
+                            rm_stopwords_bool = F,
+                            min_doc_freq = 0.3, stem_bool = F)
+  
+  ngram_results_noticket[[paste0("Topic_", k)]] <- res
+}
+
+print(ngram_results_noticket)
 
 ## Event 2
 
-missdeadline_contenttest <- ngram_diff_between(data = data_missdeadline, id_var = 'Participant_id', 
-                                           text_var = 'False_event_clean',
-                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
-                                           splitter_level_2 = 'Male', ngram_max = 1,
-                                           rm_stopwords_bool = F,
-                                           min_doc_freq = 0.05, stem_bool = F)
-head(missdeadline_contenttest$results, 15)
+ngram_results_missdeadline <- list()
+
+for (k in 1:7) {
+  topic_data <- data_missdeadline[data_missdeadline$dominant_topic == k, ]
+  
+  res <- ngram_diff_between(data = topic_data, id_var = 'Participant_id', 
+                            text_var = 'False_event_clean',
+                            splitter_var = 'Sex', splitter_level_1 = 'Female',
+                            splitter_level_2 = 'Male', ngram_max = 1,
+                            rm_stopwords_bool = F,
+                            min_doc_freq = 0.13, stem_bool = F)
+  
+  ngram_results_missdeadline[[paste0("Topic_", k)]] <- res
+}
+
+print(ngram_results_missdeadline)
 
 ## Event 3
 
-caraccidentinvolve_contenttest <- ngram_diff_between(data = data_caraccidentinvolve, id_var = 'Participant_id', 
-                                           text_var = 'False_event_clean',
-                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
-                                           splitter_level_2 = 'Male', ngram_max = 1,
-                                           rm_stopwords_bool = F,
-                                           min_doc_freq = 0.05, stem_bool = F)
-head(caraccidentinvolve_contenttest$results, 30)
+ngram_results_caraccidentinvolve <- list()
+
+for (k in 1:4) {
+  topic_data <- data_caraccidentinvolve[data_caraccidentinvolve$dominant_topic == k, ]
+  
+  res <- ngram_diff_between(data = topic_data, id_var = 'Participant_id', 
+                            text_var = 'False_event_clean',
+                            splitter_var = 'Sex', splitter_level_1 = 'Female',
+                            splitter_level_2 = 'Male', ngram_max = 1,
+                            rm_stopwords_bool = F,
+                            min_doc_freq = 0.12, stem_bool = F)
+  
+  ngram_results_caraccidentinvolve[[paste0("Topic_", k)]] <- res
+}
+
+print(ngram_results_caraccidentinvolve)
 
 ## Event 4
 
-cheatexam_contenttest <- ngram_diff_between(data = data_cheatexam, id_var = 'Participant_id', 
-                                           text_var = 'False_event_clean',
-                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
-                                           splitter_level_2 = 'Male', ngram_max = 1,
-                                           rm_stopwords_bool = F,
-                                           min_doc_freq = 0.05, stem_bool = F)
-head(cheatexam_contenttest$results, 25)
+ngram_results_cheatexam <- list()
+
+for (k in 1:6) {
+  topic_data <- data_cheatexam[data_cheatexam$dominant_topic == k, ]
+  
+  res <- ngram_diff_between(data = topic_data, id_var = 'Participant_id', 
+                            text_var = 'False_event_clean',
+                            splitter_var = 'Sex', splitter_level_1 = 'Female',
+                            splitter_level_2 = 'Male', ngram_max = 1,
+                            rm_stopwords_bool = F,
+                            min_doc_freq = 0.15, stem_bool = F)
+  
+  ngram_results_cheatexam[[paste0("Topic_", k)]] <- res
+}
+
+print(ngram_results_cheatexam)
 
 ## Event 5
 
-getfired_contenttest <- ngram_diff_between(data = data_getfired, id_var = 'Participant_id', 
-                                           text_var = 'False_event_clean',
-                                           splitter_var = 'Sex', splitter_level_1 = 'Female',
-                                           splitter_level_2 = 'Male', ngram_max = 1,
-                                           rm_stopwords_bool = F,
-                                           min_doc_freq = 0.05, stem_bool = F)
-head(getfired_contenttest$results, 15)
+ngram_results_getfired <- list()
+
+for (k in 1:6) {
+  topic_data <- data_getfired[data_getfired$dominant_topic == k, ]
+  
+  res <- ngram_diff_between(data = topic_data, id_var = 'Participant_id', 
+                            text_var = 'False_event_clean',
+                            splitter_var = 'Sex', splitter_level_1 = 'Female',
+                            splitter_level_2 = 'Male', ngram_max = 1,
+                            rm_stopwords_bool = F,
+                            min_doc_freq = 0.17, stem_bool = F)
+  
+  ngram_results_getfired[[paste0("Topic_", k)]] <- res
+}
+
+print(ngram_results_getfired)
